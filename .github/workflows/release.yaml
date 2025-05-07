@@ -20,6 +20,7 @@ jobs:
 
       - name: Build plugin
         run: |
+          yarn install
           cd plugin
           yarn install
           yarn build
