@@ -1,0 +1,25 @@
+name: AI Code Generation
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'What changes would you like the AI to make?'
+        required: true
+      branch:
+        description: 'Branch to base changes on'
+        default: 'main'
+        required: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: lemonberrylabs/openai-codex-action@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          provider_api_key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: ${{ github.event.inputs.prompt }}
+          branch_name: ${{ github.event.inputs.branch || 'main' }}

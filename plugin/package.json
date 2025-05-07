@@ -1,0 +1,36 @@
+{
+  "name": "voxidian-plugin",
+  "version": "0.1.0",
+  "description": "Obsidian plugin for Voxidian voice note processing.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "cp": "sh cp.sh",
+    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "check-updates": "npm-check-updates -u"
+  },
+  "keywords": [
+    "obsidian-plugin",
+    "openai",
+    "voice-note",
+    "transcription"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.14",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.25.4",
+    "npm-check-updates": "^18.0.1",
+    "obsidian": "^1.8.7",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "openai": "^4.97.0",
+    "zod": "^3.24.4"
+  }
+}
