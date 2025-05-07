@@ -1,13 +1,13 @@
 {
   "name": "voxidian-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Obsidian plugin for Voxidian voice note processing.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "cp": "sh cp.sh",
-    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "bump": "node version-bump.mjs && git add manifest.json versions.json",
     "check-updates": "npm-check-updates -u"
   },
   "keywords": [
