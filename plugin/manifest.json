@@ -1,7 +1,7 @@
 {
   "id": "voxidian",
   "name": "Voxidian",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "1.5.0",
   "description": "Processes voice notes, transcribes them, and intelligently saves them to your Obsidian vault using OpenAI.",
   "author": "AI Assistant (via User)",
