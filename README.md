@@ -108,7 +108,7 @@ This will generate `main.js` and other necessary files.
 ### 2. Install in Obsidian
 
 - In Obsidian, open **Settings → Community plugins → Open plugins folder**.
-- Copy the contents of the `plugin/` directory (including `main.js`, `manifest.json`, and `styles.css`) into a subfolder (e.g., `voxidian`) in your Obsidian plugins folder.
+- Copy the contents of the `plugin/` directory (including `main.js`, `manifest.json`, and `styles.css`) into a subfolder (`voxidian`; must match the `id` in `manifest.json`) in your Obsidian plugins folder.
 - Reload Obsidian or enable the plugin in the settings.
 
 ### 3. Configure
