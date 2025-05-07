@@ -27,7 +27,7 @@ export function getUniqueNoteName(existing: string[], baseTitle: string): string
 }
 
 // Define Zod schemas
-export const VoiceNoteInstructionSchema = z.object({
+const VoiceNoteInstructionSchema = z.object({
   type: z.enum(['new_note', 'append_daily', 'append_to_page']),
   target_page: z.string().optional(),
 })
@@ -40,7 +40,6 @@ export const VoiceNoteAnalysisSchema = z.object({
 
 // Infer types from Zod schemas
 export type VoiceNoteAnalysis = z.infer<typeof VoiceNoteAnalysisSchema>
-export type VoiceNoteInstruction = z.infer<typeof VoiceNoteInstructionSchema>
 
 // Interface for the part of OpenAI client we use
 // It's generic to handle the schema and name for zodTextFormat appropriately

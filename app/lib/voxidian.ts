@@ -1,5 +1,5 @@
 // TypeScript implementation of voice note processing based on Python ak/voxidian.py
-import { performTranscriptAnalysis } from '@/lib/shared'
+import { performTranscriptAnalysis, getUniqueNoteName } from '@/lib/shared'
 import type { VoiceNoteAnalysis } from '@/lib/shared'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
@@ -69,7 +69,7 @@ interface GitHubFileUpdateRequest {
 const openai = new OpenAI()
 
 // Decode base64 audio string, save to temporary file, and return its path
-export async function decodeBase64Audio(voicenote: string): Promise<string> {
+async function decodeBase64Audio(voicenote: string): Promise<string> {
   const tempDir = os.tmpdir()
   const fileName = `voicenote_${process.pid}_${Date.now()}.webm`
   const filePath = path.join(tempDir, fileName)
@@ -79,7 +79,7 @@ export async function decodeBase64Audio(voicenote: string): Promise<string> {
 }
 
 // Transcribe the audio file using OpenAI API
-export async function transcribeAudio(filePath: string): Promise<string> {
+async function transcribeAudio(filePath: string): Promise<string> {
   const fileStream = fs.createReadStream(filePath)
   const response = await openai.audio.transcriptions.create({
     model: 'gpt-4o-transcribe',
@@ -90,7 +90,7 @@ export async function transcribeAudio(filePath: string): Promise<string> {
 }
 
 // List markdown files in the GitHub repository
-export async function getExistingFiles(ownerRepo: string, githubToken: string): Promise<string[]> {
+async function getExistingFiles(ownerRepo: string, githubToken: string): Promise<string[]> {
   const url = `https://api.github.com/repos/${ownerRepo}/contents`
   const res = await fetch(url, {
     headers: {
@@ -107,7 +107,7 @@ export async function getExistingFiles(ownerRepo: string, githubToken: string): 
 }
 
 // Fetch a file's content and SHA from GitHub
-export async function getFileContent(
+async function getFileContent(
   ownerRepo: string,
   filePath: string,
   githubToken: string
@@ -129,7 +129,7 @@ export async function getFileContent(
 }
 
 // Create or update a file in GitHub repository
-export async function createOrUpdateFile(
+async function createOrUpdateFile(
   ownerRepo: string,
   filePath: string,
   content: string,
@@ -162,7 +162,7 @@ export async function createOrUpdateFile(
 }
 
 // Append content to today's daily note
-export async function appendToDailyNote(
+async function appendToDailyNote(
   ownerRepo: string,
   content: string,
   githubToken: string,
@@ -195,7 +195,7 @@ export async function appendToDailyNote(
 }
 
 // Append content to a specific page
-export async function appendToPage(
+async function appendToPage(
   ownerRepo: string,
   targetPage: string,
   content: string,
@@ -230,7 +230,7 @@ export async function appendToPage(
 }
 
 // Analyze transcript using OpenAI responses.parse with Zod schema
-export async function analyzeTranscript(transcript: string, existingFiles: string[]): Promise<VoiceNoteAnalysis> {
+async function analyzeTranscript(transcript: string, existingFiles: string[]): Promise<VoiceNoteAnalysis> {
   // Call the shared analysis function
   return performTranscriptAnalysis(openai, transcript, existingFiles)
 }
@@ -265,15 +265,7 @@ export async function processVoiceNote(
     } else {
       // 'new_note'
       const title = analysis.title.trim() || 'Untitled Note' // Use a default title if empty
-      let fileName = title.endsWith('.md') ? title : `${title}.md`
-      let counter = 1
-      // Ensure unique filename for new notes
-      while (existing.includes(fileName)) {
-        // Use the original title plus counter for subsequent attempts
-        const baseTitle = title.replace(/ \d+\.md$/, '').replace(/\.md$/, '') // Get base title without counter/extension
-        fileName = `${baseTitle} ${counter}.md`
-        counter++
-      }
+      const fileName = getUniqueNoteName(existing, title)
       return await createOrUpdateFile(
         ownerRepo,
         fileName,
