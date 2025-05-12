@@ -37,9 +37,16 @@ export function initializeOpenAI(key: string) {
 // Helper: create a new note with a unique filename (DRY)
 async function createNewNote(app: App, title: string, content: string): Promise<TFile> {
   const trimmedTitle = title.trim() || 'Untitled Voice Note'
-  const existingFiles = app.vault.getMarkdownFiles().map((file) => file.basename + '.md')
+
+  // Get existing files with their full paths
+  const existingFiles = app.vault.getMarkdownFiles().map((file) => file.path)
+
+  // Generate a unique filename
   const finalName = getUniqueNoteName(existingFiles, trimmedTitle)
+
+  // Normalize the path to ensure proper file creation
   const path = normalizePath(finalName)
+
   const file = await app.vault.create(path, content)
   new Notice(`Created note: ${file.basename}`)
   return file
@@ -66,8 +73,8 @@ export async function processVoiceNoteForPlugin(app: App, voicenoteBase64: strin
       return
     }
 
-    // Get existing file names for context
-    const existingFiles = app.vault.getMarkdownFiles().map((file) => file.basename)
+    // Get existing file paths for context
+    const existingFiles = app.vault.getMarkdownFiles().map((file) => file.path)
 
     // Analyze the transcript using OpenAI
     new Notice('Analyzing transcript...')

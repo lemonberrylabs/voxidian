@@ -90,7 +90,7 @@ async function transcribeAudio(filePath: string): Promise<string> {
 }
 
 // List markdown files in the GitHub repository
-async function getExistingFiles(ownerRepo: string, githubToken: string): Promise<string[]> {
+async function getExistingFiles(ownerRepo: string, githubToken: string): Promise<Array<{ fullPath: string }>> {
   const url = `https://api.github.com/repos/${ownerRepo}/contents`
   const res = await fetch(url, {
     headers: {
@@ -102,8 +102,8 @@ async function getExistingFiles(ownerRepo: string, githubToken: string): Promise
     const text = await res.text()
     throw new Error(`GitHub API error listing files: ${res.status} ${res.statusText}: ${text}`)
   }
-  const data = (await res.json()) as Array<{ name: string }>
-  return data.filter((item) => item.name.endsWith('.md')).map((item) => item.name)
+  const data = (await res.json()) as Array<{ path: string }>
+  return data.filter((item) => item.path.endsWith('.md')).map((item) => ({ fullPath: item.path }))
 }
 
 // Fetch a file's content and SHA from GitHub
@@ -166,11 +166,11 @@ async function appendToDailyNote(
   ownerRepo: string,
   content: string,
   githubToken: string,
-  existingFiles: string[]
+  existingFiles: Array<{ fullPath: string }>
 ): Promise<GitHubFileUpdateResponse> {
   const today = new Date().toISOString().slice(0, 10)
   const fileName = `${today}.md`
-  if (existingFiles.includes(fileName)) {
+  if (existingFiles.some((file) => file.fullPath.endsWith(fileName))) {
     const { content: oldContent, sha } = await getFileContent(ownerRepo, fileName, githubToken)
     // Prepend horizontal rule as requested in prompt
     const newContent = `${oldContent}\n\n---\n\n${content}`
@@ -200,18 +200,24 @@ async function appendToPage(
   targetPage: string,
   content: string,
   githubToken: string,
-  existingFiles: string[]
+  existingFiles: Array<{ fullPath: string }>
 ): Promise<GitHubFileUpdateResponse> {
   // Ensure filename ends with .md *before* checking existence
   const fileName = targetPage.endsWith('.md') ? targetPage : `${targetPage}.md`
 
-  if (existingFiles.includes(fileName)) {
-    // File exists, append to it
-    const { content: oldContent, sha } = await getFileContent(ownerRepo, fileName, githubToken)
+  // Find a matching file by checking if fullPath ends with fileName
+  // This handles both cases: exact file path or just the filename
+  const matchingFile = existingFiles.find(
+    (file) => file.fullPath.endsWith(`/${fileName}`) || file.fullPath === fileName
+  )
+
+  if (matchingFile) {
+    // File exists, append to it - use the full path from the matching file
+    const { content: oldContent, sha } = await getFileContent(ownerRepo, matchingFile.fullPath, githubToken)
     const newContent = `${oldContent}\n\n${content}`
     return await createOrUpdateFile(
       ownerRepo,
-      fileName,
+      matchingFile.fullPath,
       newContent,
       `Append voice note to ${fileName}`,
       githubToken,
@@ -230,9 +236,16 @@ async function appendToPage(
 }
 
 // Analyze transcript using OpenAI responses.parse with Zod schema
-async function analyzeTranscript(transcript: string, existingFiles: string[]): Promise<VoiceNoteAnalysis> {
+async function analyzeTranscript(
+  transcript: string,
+  existingFiles: Array<{ fullPath: string }>
+): Promise<VoiceNoteAnalysis> {
   // Call the shared analysis function
-  return performTranscriptAnalysis(openai, transcript, existingFiles)
+  return performTranscriptAnalysis(
+    openai,
+    transcript,
+    existingFiles.map((file) => file.fullPath)
+  )
 }
 
 // Main entry: process a voice note end-to-end
@@ -265,7 +278,10 @@ export async function processVoiceNote(
     } else {
       // 'new_note'
       const title = analysis.title.trim() || 'Untitled Note' // Use a default title if empty
-      const fileName = getUniqueNoteName(existing, title)
+      const fileName = getUniqueNoteName(
+        existing.map((file) => file.fullPath),
+        title
+      )
       return await createOrUpdateFile(
         ownerRepo,
         fileName,

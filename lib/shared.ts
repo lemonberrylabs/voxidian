@@ -10,19 +10,31 @@ export const instructions = (existingFiles: string[]) => {
 - Generate a descriptive title for the note IF it's intended as a new note (instruction type 'new_note'). Titles may contain spaces. If appending, the title can be empty or reflect the instruction.
 - Ensure the output strictly adheres to the VoiceNoteAnalysis schema.
 - If the instruction is 'append_daily', use today's date (${today}) implicitly; do not include it in target_page.
-- If the instruction is 'append_to_page', the target_page must be the filename (e.g., 'My Existing Note.md').
-- For context, here is the list of existing markdown files that could be linked to or appended to: ${existingFiles.join(', ')}
+- If the instruction is 'append_to_page', the target_page must be the full path to the file (e.g., 'folder/My Existing Note.md') or just the filename if at the root level.
+- For context, here is the list of existing markdown files (with their full paths) that could be linked to or appended to: ${existingFiles.join(', ')}
 `
 }
 
 export function getUniqueNoteName(existing: string[], baseTitle: string): string {
+  // Ensure baseTitle has .md extension
   let fileName = baseTitle.endsWith('.md') ? baseTitle : `${baseTitle}.md`
   let counter = 1
+
+  // Extract just the base title without extension for incrementing
   const base = baseTitle.replace(/ \d+\.md$/, '').replace(/\.md$/, '')
-  while (existing.includes(fileName)) {
+
+  // Helper function to extract just the filename from a full path if needed
+  const getFilename = (path: string): string => {
+    const lastSlashIndex = path.lastIndexOf('/')
+    return lastSlashIndex >= 0 ? path.substring(lastSlashIndex + 1) : path
+  }
+
+  // Check if the filename already exists, considering full paths
+  while (existing.some((path) => getFilename(path) === fileName)) {
     fileName = `${base} ${counter}.md`
     counter++
   }
+
   return fileName
 }
 
