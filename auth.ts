@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth'
 import Google from 'next-auth/providers/google'
 
 // Allowed email addresses that can log in
-const ALLOWED_EMAILS = ['lemonberrylabs@gmail.com', 'enricomagen@gmail.com']
+const ALLOWED_EMAILS = process.env.AUTH_ALLOWED_EMAILS?.split(',') || []
 
 const authConfig: NextAuthConfig = {
   providers: [
