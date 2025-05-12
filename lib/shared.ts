@@ -9,9 +9,9 @@ export const instructions = (existingFiles: string[]) => {
 - Identify entities mentioned that should be wiki-linked using [[entity name]]. Entities may contain spaces.
 - Generate a descriptive title for the note IF it's intended as a new note (instruction type 'new_note'). Titles may contain spaces. If appending, the title can be empty or reflect the instruction.
 - Ensure the output strictly adheres to the VoiceNoteAnalysis schema.
-- If the instruction is 'append_daily', use today's date (${today}) implicitly; do not include it in target_page.
-- If the instruction is 'append_to_page', the target_page must be the full path to the file (e.g., 'folder/My Existing Note.md') or just the filename if at the root level.
 - For context, here is the list of existing markdown files (with their full paths) that could be linked to or appended to: ${existingFiles.join(', ')}
+- If the instruction is 'append_daily', use today's date (${today}) implicitly; do not include it in target_page; the daily note page may be in a subfolder, so you need to find it in the existing files, if it is not there, create it in the appropriate subfolder based on the location of other daily notes.
+- If the instruction is 'append_to_page', the target_page must be the full path to the file (e.g., 'folder/My Existing Note.md') or just the filename if at the root level.
 `
 }
 
