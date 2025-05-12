@@ -41,7 +41,7 @@ export function getUniqueNoteName(existing: string[], baseTitle: string): string
 // Define Zod schemas
 const VoiceNoteInstructionSchema = z.object({
   type: z.enum(['new_note', 'append_daily', 'append_to_page']),
-  target_page: z.string().optional(),
+  target_page: z.string().optional().nullable(),
 })
 
 export const VoiceNoteAnalysisSchema = z.object({
